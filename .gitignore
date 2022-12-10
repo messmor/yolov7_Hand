@@ -20,6 +20,7 @@
 *.data
 *.json
 *.cfg
+*.pt
 !setup.cfg
 !cfg/yolov3*.cfg
 
@@ -41,6 +42,11 @@ results*.csv
 coco/
 coco128/
 VOC/
+COCO-Hand/
+CMU_Panoptic/
+
+### model weights
+pretrained_weights/
 
 coco2017labels-segments.zip
 test2017.zip
