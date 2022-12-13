@@ -35,7 +35,7 @@ class Output_Video(object):
     def close_stream(self):
         self.output.close()
 
-def detect(source, weights, imgsz, device, conf_thres=0.25, iou_thres=0.45, classes=[1], write_video=True):
+def detect(source, weights, imgsz, device, conf_thres=0.25, iou_thres=0.45, classes=[1], write_video=False, save_pred=False):
     #ensure source video path is valid
     if not Path(source).is_file():
         FileNotFoundError(f"source video path {source} does not exist!")
@@ -133,6 +133,8 @@ def detect(source, weights, imgsz, device, conf_thres=0.25, iou_thres=0.45, clas
 
 
     print(f'Done. ({time.time() - t0:.3f}s)')
+
+    return all_predictions
 
 
 if __name__ == '__main__':
