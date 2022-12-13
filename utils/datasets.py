@@ -140,7 +140,8 @@ class LoadImages:  # for inference
         images = [x for x in files if x.split('.')[-1].lower() in img_formats]
         videos = [x for x in files if x.split('.')[-1].lower() in vid_formats]
         ni, nv = len(images), len(videos)
-
+        self.video_frame_size = None
+        self.fps = None
         self.img_size = img_size
         self.stride = stride
         self.files = images + videos
@@ -151,6 +152,9 @@ class LoadImages:  # for inference
             self.new_video(videos[0])  # new video
         else:
             self.cap = None
+
+
+
         assert self.nf > 0, f'No images or videos found in {p}. ' \
                             f'Supported formats are:\nimages: {img_formats}\nvideos: {vid_formats}'
 
@@ -167,6 +171,7 @@ class LoadImages:  # for inference
             # Read video
             self.mode = 'video'
             ret_val, img0 = self.cap.read()
+
             if not ret_val:
                 self.count += 1
                 self.cap.release()
@@ -177,8 +182,9 @@ class LoadImages:  # for inference
                     self.new_video(path)
                     ret_val, img0 = self.cap.read()
 
+
             self.frame += 1
-            print(f'video {self.count + 1}/{self.nf} ({self.frame}/{self.nframes}) {path}: ', end='')
+            # print(f'video {self.count + 1}/{self.nf} ({self.frame}/{self.nframes}) {path}: ', end='')
 
         else:
             # Read image
@@ -200,6 +206,8 @@ class LoadImages:  # for inference
         self.frame = 0
         self.cap = cv2.VideoCapture(path)
         self.nframes = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.fps = np.int(self.cap.get(cv2.CAP_PROP_FPS))
+        self.video_frame_size = (np.int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)),np.int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)))
 
     def __len__(self):
         return self.nf  # number of files
@@ -280,7 +288,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
         self.sources = [clean_str(x) for x in sources]  # clean source names for later
         for i, s in enumerate(sources):
             # Start the thread to read frames from the video stream
-            print(f'{i + 1}/{n}: {s}... ', end='')
+            # print(f'{i + 1}/{n}: {s}... ', end='')
             url = eval(s) if s.isnumeric() else s
             if 'youtube.com/' in str(url) or 'youtu.be/' in str(url):  # if source is YouTube video
                 check_requirements(('pafy', 'youtube_dl'))
@@ -294,7 +302,7 @@ class LoadStreams:  # multiple IP or RTSP cameras
 
             _, self.imgs[i] = cap.read()  # guarantee first frame
             thread = Thread(target=self.update, args=([i, cap]), daemon=True)
-            print(f' success ({w}x{h} at {self.fps:.2f} FPS).')
+            # print(f' success ({w}x{h} at {self.fps:.2f} FPS).')
             thread.start()
         print('')  # newline
 

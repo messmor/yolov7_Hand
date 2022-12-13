@@ -47,7 +47,7 @@ CMU_Panoptic/
 
 ### model weights
 pretrained_weights/
-
+weights
 coco2017labels-segments.zip
 test2017.zip
 train2017.zip
