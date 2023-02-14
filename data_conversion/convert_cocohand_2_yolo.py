@@ -6,7 +6,18 @@ import numpy as np
 import imagesize
 from pathlib import Path
 from random import shuffle
+from copy import deepcopy
 
+
+def fill_nums(number):
+    """enter a number with less than 12 digits, outputs"""
+    """a number with 12 digits, padded with zeros."""
+    number = str(number)
+    assert len(number) <= 12
+    pad = 12 - len(number)
+    new_number = ''.join(["0" for i in range(pad)]) + number
+
+    return new_number
 def visualize_box(image, x_center, y_center, box_w, box_h):
     img_h,img_w, _ = image.shape
     x_center *= img_w
@@ -21,7 +32,7 @@ def visualize_box(image, x_center, y_center, box_w, box_h):
     cv2.waitKey()
     return
 
-def convert_COCO_data_2_yolo(val_indices, Root_COCO_Hand, yolo_root, visualize=False):
+def convert_COCO_Hand_data_2_yolo(val_indices, Root_COCO_Hand, yolo_root, visualize=False):
     print(f"starting data conversion for {Root_COCO_Hand}! ")
     #right hand class is custom yolo class
     hand_class = 0
@@ -108,18 +119,42 @@ def convert_COCO_data_2_yolo(val_indices, Root_COCO_Hand, yolo_root, visualize=F
 
     train_cat.close()
     val_cat.close()
-    
+
+def convert_COCO_data_2_yolo(COCO_Hand_Person_Root):
+    """TODO: create a method that will go through the COCO dataset list of annotations. Anytime the"""
+    """there is a person id, it checks to see if there is a hand annotation in COCO_Hand_Dataset."""
+    """if there is then an annotation txt for the given image in the COCO_Hand_Dataset (a copy lives """
+    """COCO-Hand-Person) and the person annotation is written to the text. This will create a list of labels"""
+    """that can be used to train a yolo network that detects hand and people at the same time. Reducing the"""
+    """run time of the total ml_pipeline."""
+
+    Data_Root = Path(COCO_Hand_Person_Root)
+    if not Data_Root.is_dir():
+        IsADirectoryError(f"{Data_Root.as_posix()} is not a directory!")
+    train_ann = json.load(open((Data_Root / "ms_coco_annotations/instances_train2014.json").as_posix(),"r"))
+    val_ann = json.load(open((Data_Root / "ms_coco_annotations/instances_val2014.json").as_posix(), "r"))
+
+    for entry in train_ann["annotations"]:
+        bbox = deepcopy(entry["bbox"])
+        image_id = deepcopy(entry["image_id"])
+        image_name = f"{fill_nums(image_id)}.jpg"
+        temp_path = f"/home/mitchell/research/yolov7_Hand/COCO-Hand/images/val/{image_name}"
+        print(f"Image path {image_name} exist: {Path(temp_path).is_file()}")
+
+
+
+
+    return
+
+
+
+
+
     
 if __name__ == "__main__":
-    Root_COCO_Hand = "/home/mitchell/data/Hand_Data/Hand_Detection/COCO-Hand"
-    Root_TV_Hand = "/home/mitchell/data/Hand_Data/Hand_Detection/TV-Hand"
-    yolo_root = "/home/mitchell/research/yolov7_Hand"
-    num_samples = int(0.05*15000)
-    val_indices = np.random.randint(low=0,high=15000,size=(num_samples,)).tolist()
-    convert_COCO_data_2_yolo(val_indices,Root_COCO_Hand,yolo_root)
-    # num_samples = int(0.05*15000)
-    # val_indices = np.random.randint(low=0,high=15000,size=(num_samples,)).tolist()
-    # convert_COCO_data_2_yolo(val_indices,Root_TV_Hand,yolo_root)
+    COCO_Hand_Person_Root = "/home/mitchell/research/yolov7_Hand/COCO-Hand-Person/"
+    convert_COCO_data_2_yolo(COCO_Hand_Person_Root)
+
 
 
 
