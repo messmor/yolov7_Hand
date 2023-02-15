@@ -32,6 +32,24 @@ def visualize_box(image, x_center, y_center, box_w, box_h):
     cv2.waitKey()
     return
 
+def convert_2_yolo(bbox, img_w, img_h):
+    """Converts a bbox in the format [x_min,x_max,y_min,y_max] to a normalized"""
+    """yolo format of [x_center, y_center, box_h, box_w] """
+
+    x_min, x_max, y_min, y_max = bbox
+    # convert box to yolo format
+    x_center = (x_min + x_max) / 2
+    y_center = (y_min + y_max) / 2
+    box_h = abs(y_max - y_min)
+    box_w = abs(x_max - x_min)
+
+    # normalize data
+    x_center = np.round(x_center / img_w, 4)
+    y_center = np.round(y_center / img_h, 4)
+    box_w = np.round(box_w / img_w, 4)
+    box_h = np.round(box_h / img_h, 4)
+
+    return [x_center, y_center, box_w, box_h]
 def convert_COCO_Hand_data_2_yolo(val_indices, Root_COCO_Hand, yolo_root, visualize=False):
     print(f"starting data conversion for {Root_COCO_Hand}! ")
     #right hand class is custom yolo class
@@ -77,18 +95,8 @@ def convert_COCO_Hand_data_2_yolo(val_indices, Root_COCO_Hand, yolo_root, visual
         img_name = img_path.with_suffix('').name
         img_w, img_h = imagesize.get(img_path.as_posix())
         x_min,x_max,y_min,y_max = [int(data[i]) for i in range(1,5)]
+        x_center, y_center, box_w, box_h = convert_2_yolo([x_min, x_max,y_min,y_max],img_w,img_h)
 
-        #convert box to yolo format
-        x_center = (x_min + x_max)/2
-        y_center = (y_min+ y_max)/2
-        box_h = abs(y_max - y_min)
-        box_w = abs(x_max - x_min)
-
-        #normalize data
-        x_center = np.round(x_center / img_w, 4)
-        y_center = np.round(y_center / img_h, 4)
-        box_w = np.round(box_w / img_w, 4)
-        box_h = np.round(box_h / img_h, 4)
         #write data to txt file
         val_ann = True if e_i in val_indices else False
         if val_ann:
@@ -120,40 +128,7 @@ def convert_COCO_Hand_data_2_yolo(val_indices, Root_COCO_Hand, yolo_root, visual
     train_cat.close()
     val_cat.close()
 
-def convert_COCO_data_2_yolo(COCO_Hand_Person_Root):
-    """TODO: create a method that will go through the COCO dataset list of annotations. Anytime the"""
-    """there is a person id, it checks to see if there is a hand annotation in COCO_Hand_Dataset."""
-    """if there is then an annotation txt for the given image in the COCO_Hand_Dataset (a copy lives """
-    """COCO-Hand-Person) and the person annotation is written to the text. This will create a list of labels"""
-    """that can be used to train a yolo network that detects hand and people at the same time. Reducing the"""
-    """run time of the total ml_pipeline."""
 
-    Data_Root = Path(COCO_Hand_Person_Root)
-    if not Data_Root.is_dir():
-        IsADirectoryError(f"{Data_Root.as_posix()} is not a directory!")
-    train_ann = json.load(open((Data_Root / "ms_coco_annotations/instances_train2014.json").as_posix(),"r"))
-    val_ann = json.load(open((Data_Root / "ms_coco_annotations/instances_val2014.json").as_posix(), "r"))
-
-    for entry in train_ann["annotations"]:
-        bbox = deepcopy(entry["bbox"])
-        image_id = deepcopy(entry["image_id"])
-        image_name = f"{fill_nums(image_id)}.jpg"
-        temp_path = f"/home/mitchell/research/yolov7_Hand/COCO-Hand/images/val/{image_name}"
-        print(f"Image path {image_name} exist: {Path(temp_path).is_file()}")
-
-
-
-
-    return
-
-
-
-
-
-    
-if __name__ == "__main__":
-    COCO_Hand_Person_Root = "/home/mitchell/research/yolov7_Hand/COCO-Hand-Person/"
-    convert_COCO_data_2_yolo(COCO_Hand_Person_Root)
 
 
 

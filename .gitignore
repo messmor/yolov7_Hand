@@ -48,6 +48,9 @@ CMU_Panoptic/
 ### model weights
 pretrained_weights/
 
+###test videos
+Hand_Test_Videos
+
 coco2017labels-segments.zip
 test2017.zip
 train2017.zip
@@ -268,3 +271,4 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 /COCO-Hand-Person/
+/Hand_Test_Videos/
