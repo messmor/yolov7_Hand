@@ -44,6 +44,7 @@ coco128/
 VOC/
 COCO-Hand/
 CMU_Panoptic/
+Ego_Hands/
 
 ### model weights
 pretrained_weights/
